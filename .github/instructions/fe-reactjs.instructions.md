@@ -3,178 +3,385 @@ description: 'ReactJS development standards and best practices'
 applyTo: '**'
 ---
 
-# ReactJS Development Instructions
+## React
 
-Instructions for building high-quality ReactJS applications with modern patterns, hooks, and best practices following the official React documentation at https://react.dev.
+- Use PascalCase for React component names
+- Component files should match the component name but in kebab-case
+- Examples: `UserProfile` component in `user-profile.tsx`, `NavigationBar` component in `navigation-bar.tsx`
+- Use `props` directly in the component
+- Have a single `useState` per component/file.
+- Avoid `isMobile` or similar JavaScript-based responsive detection - handle responsiveness with CSS classes and Tailwind breakpoints instead.
+- Avoid `useEffect`, `useCallback` and `useMemo` unless necessary.
+- Check in `components` directory for existing components before creating new ones.
 
-## Project Context
+## Component Architecture Patterns
 
-- Latest React version (React 19+)
-- TypeScript for type safety (when applicable)
-- Functional components with hooks as default
-- Follow React's official style guide and best practices
-- Use modern build tools (Vite, Create React App, or custom Webpack setup)
-- Implement proper component composition and reusability patterns
+### Main UI Component with Children Pattern
 
-## Development Standards
+For complex pages, use a main UI component that provides layout and orchestrates multiple child components:
 
-### Architecture
+```typescript
+// Main component that provides layout and coordinates children
+export function ProductDetailPage(props: ProductDetailPageProps) {
+  const [quantity, setQuantity] = useState(1);
 
-- Use functional components with hooks as the primary pattern
-- Implement component composition over inheritance
-- Organize components by feature or domain for scalability
-- Separate presentational and container components clearly
-- Use custom hooks for reusable stateful logic
-- Implement proper component hierarchies with clear data flow
+  const isOutOfStock = !props.product.stock ||
+    getStockStatus(props.product.stock) === props.microcopies.outOfStock;
 
-### TypeScript Integration
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Child components */}
+        <ProductImages images={props.product.images} productName={props.product.name} />
 
-- Use TypeScript interfaces for props, state, and component definitions
-- Define proper types for event handlers and refs
-- Implement generic components where appropriate
-- Use strict mode in `tsconfig.json` for type safety
-- Leverage React's built-in types (`React.FC`, `React.ComponentProps`, etc.)
-- Create union types for component variants and states
+        <div className="space-y-6">
+          <ProductInformation microcopies={props.microcopies} product={props.product} />
+          <QuantitySelector
+            disabled={isOutOfStock}
+            microcopies={props.microcopies}
+            onQuantityChange={setQuantity}
+          />
+          <ProductActions disabled={isOutOfStock} microcopies={props.microcopies} />
+        </div>
+      </div>
 
-### Component Design
+      <ProductDetails microcopies={props.microcopies} product={props.product} />
+    </div>
+  );
+}
+```
 
-- Follow the single responsibility principle for components
-- Use descriptive and consistent naming conventions
-- Implement proper prop validation with TypeScript or PropTypes
-- Design components to be testable and reusable
-- Keep components small and focused on a single concern
-- Use composition patterns (render props, children as functions)
+### Props Structure and Type Composition
 
-### State Management
+The parent component should compose its props interface using child component props, not duplicate them:
 
-- Use `useState` for local component state
-- Implement `useReducer` for complex state logic
-- Leverage `useContext` for sharing state across component trees
-- Consider external state management (Redux Toolkit, Zustand) for complex applications
-- Implement proper state normalization and data structures
-- Use React Query or SWR for server state management
+#### ✅ DO: Use Type Composition
 
-### Hooks and Effects
+```typescript
+// Child components export their props interfaces
+export interface ProductInformationProps {
+	product: ProductDetailPageProduct;
+	microcopies: {
+		productCode: string;
+		availability: string;
+		stock: string;
+		// ... other microcopies
+	};
+}
 
-- Use `useEffect` with proper dependency arrays to avoid infinite loops
-- Implement cleanup functions in effects to prevent memory leaks
-- Use `useMemo` and `useCallback` for performance optimization when needed
-- Create custom hooks for reusable stateful logic
-- Follow the rules of hooks (only call at the top level)
-- Use `useRef` for accessing DOM elements and storing mutable values
+export interface QuantitySelectorProps {
+	initialQuantity: number;
+	disabled?: boolean;
+	microcopies: {
+		quantity: string;
+	};
+}
 
-### Styling
+// Parent component composes props from children
+export interface ProductDetailPageProps {
+	product: ProductDetailPageProduct;
+	breadcrumbItems: Array<BreadcrumbItem>;
+	microcopies: ProductInformationProps['microcopies'] &
+		QuantitySelectorProps['microcopies'] &
+		ProductActionsProps['microcopies'] & {
+			productNotFound: string;
+			errorLoadingProduct: string;
+		};
+}
+```
 
-- Use CSS Modules, Styled Components, or modern CSS-in-JS solutions
-- Implement responsive design with mobile-first approach
-- Follow BEM methodology or similar naming conventions for CSS classes
-- Use CSS custom properties (variables) for theming
-- Implement consistent spacing, typography, and color systems
-- Ensure accessibility with proper ARIA attributes and semantic HTML
+#### ❌ DON'T: Duplicate Interface Definitions
 
-### Performance Optimization
+```typescript
+// Don't duplicate microcopies or other props that children already define
+export interface ProductDetailPageProps {
+	product: ProductDetailPageProduct;
+	microcopies: {
+		// Don't repeat what child components already define
+		productCode: string;
+		availability: string;
+		quantity: string;
+		// ...
+	};
+}
+```
 
-- Use `React.memo` for component memoization when appropriate
-- Implement code splitting with `React.lazy` and `Suspense`
-- Optimize bundle size with tree shaking and dynamic imports
-- Use `useMemo` and `useCallback` judiciously to prevent unnecessary re-renders
-- Implement virtual scrolling for large lists
-- Profile components with React DevTools to identify performance bottlenecks
+### Shared Types Architecture
 
-### Data Fetching
+Create a dedicated types file for shared interfaces to avoid circular dependencies:
 
-- Use modern data fetching libraries (React Query, SWR, Apollo Client)
-- Implement proper loading, error, and success states
-- Handle race conditions and request cancellation
-- Use optimistic updates for better user experience
-- Implement proper caching strategies
-- Handle offline scenarios and network errors gracefully
+```typescript
+// component-name.types.ts - Centralized shared types
+export interface ProductImage {
+	url: string;
+	altText: string;
+}
 
-### Error Handling
+export interface ProductPrice {
+	formattedValue: string;
+	value: number;
+	currencyIso: string;
+}
 
-- Implement Error Boundaries for component-level error handling
-- Use proper error states in data fetching
-- Implement fallback UI for error scenarios
-- Log errors appropriately for debugging
-- Handle async errors in effects and event handlers
-- Provide meaningful error messages to users
+export interface ProductStock {
+	stockLevel?: number;
+	stockLevelStatus: 'inStock' | 'outOfStock' | 'unknown';
+}
 
-### Forms and Validation
+export interface ProductDetailPageProduct {
+	code: string;
+	name: string;
+	description?: string;
+	images?: Array<ProductImage>;
+	price?: ProductPrice;
+	stock?: ProductStock;
+	// ... other product properties
+}
 
-- Use controlled components for form inputs
-- Implement proper form validation with libraries like Formik, React Hook Form
-- Handle form submission and error states appropriately
-- Implement accessibility features for forms (labels, ARIA attributes)
-- Use debounced validation for better user experience
-- Handle file uploads and complex form scenarios
+export interface BreadcrumbItem {
+	href?: string;
+	label: string;
+	isCurrentPage?: boolean;
+}
+```
 
-### Routing
+### Microcopies Pattern
 
-- Use React Router for client-side routing
-- Implement nested routes and route protection
-- Handle route parameters and query strings properly
-- Implement lazy loading for route-based code splitting
-- Use proper navigation patterns and back button handling
-- Implement breadcrumbs and navigation state management
+Always use microcopies objects for all text content, even if only one text property is needed:
 
-### Testing
+#### ✅ DO: Always Use Microcopies Object
 
-- Write unit tests for components using React Testing Library
-- Test component behavior, not implementation details
-- Use Jest for test runner and assertion library
-- Implement integration tests for complex component interactions
-- Mock external dependencies and API calls appropriately
-- Test accessibility features and keyboard navigation
+```typescript
+// Even for single text values, use microcopies object
+export interface QuantitySelectorProps {
+  initialQuantity: number;
+  microcopies: {
+    quantity: string; // Always use object, never just a string
+  };
+}
 
-### Security
+export function QuantitySelector(props: QuantitySelectorProps) {
+  return (
+    <div>
+      <Body>{props.microcopies.quantity}:</Body>
+      {/* Component implementation */}
+    </div>
+  );
+}
+```
 
-- Sanitize user inputs to prevent XSS attacks
-- Validate and escape data before rendering
-- Use HTTPS for all external API calls
-- Implement proper authentication and authorization patterns
-- Avoid storing sensitive data in localStorage or sessionStorage
-- Use Content Security Policy (CSP) headers
+#### ❌ DON'T: Use Direct String Props for Text
 
-### Accessibility
+```typescript
+// Don't use direct string props for user-facing text
+export interface QuantitySelectorProps {
+	label: string; // Avoid this - not localization-friendly
+}
+```
 
-- Use semantic HTML elements appropriately
-- Implement proper ARIA attributes and roles
-- Ensure keyboard navigation works for all interactive elements
-- Provide alt text for images and descriptive text for icons
-- Implement proper color contrast ratios
-- Test with screen readers and accessibility tools
+### Directory Structure for Complex Components
 
-## Implementation Process
+```
+component-name/
+├── component-name.tsx          # Main component with layout
+├── component-name.types.ts     # Shared types
+├── component-name.mocks.ts     # Mock data
+├── component-name.stories.tsx  # Storybook stories
+├── child-component-1/
+│   └── child-component-1.tsx   # Child component
+├── child-component-2/
+│   └── child-component-2.tsx   # Child component
+└── child-component-3/
+    └── child-component-3.tsx   # Child component
+```
 
-1. Plan component architecture and data flow
-2. Set up project structure with proper folder organization
-3. Define TypeScript interfaces and types
-4. Implement core components with proper styling
-5. Add state management and data fetching logic
-6. Implement routing and navigation
-7. Add form handling and validation
-8. Implement error handling and loading states
-9. Add testing coverage for components and functionality
-10. Optimize performance and bundle size
-11. Ensure accessibility compliance
-12. Add documentation and code comments
+## UI Components Architecture
 
-## Additional Guidelines
+UI components should be purely presentational and follow these guidelines:
 
-- Follow React's naming conventions (PascalCase for components, camelCase for functions)
-- Use meaningful commit messages and maintain clean git history
-- Implement proper code splitting and lazy loading strategies
-- Document complex components and custom hooks with JSDoc
-- Use ESLint and Prettier for consistent code formatting
-- Keep dependencies up to date and audit for security vulnerabilities
-- Implement proper environment configuration for different deployment stages
-- Use React Developer Tools for debugging and performance analysis
+### Core Principles
 
-## Common Patterns
+1. **Presentational Only**: UI components should be purely presentational
+2. **No Data Fetching**: Components should not perform API calls or data fetching
+3. **No Global State**: Components should not manage or access global state
+4. **No Framework Dependencies**: UI components should not depend on routing or other framework-specific features
+5. **Use Existing Components**: Always check and use components from `packages/ui/src/components` before creating new ones
+6. **Direct Imports**: Import components directly from their `.tsx` files rather than using barrel exports
+7. **Microcopies Objects**: Always use microcopies objects for text content, never direct string props
+8. **Type Composition**: Parent components should compose props from child components, not duplicate them
 
-- Higher-Order Components (HOCs) for cross-cutting concerns
-- Render props pattern for component composition
-- Compound components for related functionality
-- Provider pattern for context-based state sharing
-- Container/Presentational component separation
-- Custom hooks for reusable logic extraction
+### HTML Tag Component Mapping
+
+Every HTML tag used in the application should have a corresponding React component:
+
+- `<button>` → `Button` component
+- `<input>` → `Input` component
+- `<p>` → `Paragraph` component
+- `<h1>`, `<h2>`, etc. → `Heading` component with size prop
+- `<img>` → `Image` component
+- `<a>` → `Link` component
+- `<form>` → `Form` component
+- `<select>` → `Select` component
+- `<textarea>` → `Textarea` component
+
+### Component Structure
+
+All UI components should follow this structure:
+
+```typescript
+import React from 'react';
+
+interface ComponentNameProps {
+  // Props with descriptive names using camelCase
+  children?: React.ReactNode;
+  className?: string;
+  microcopies: {
+    // Always include microcopies for any user-facing text
+    label: string;
+    placeholder?: string;
+  };
+  // Other props...
+}
+
+export function ComponentName(props: ComponentNameProps) {
+  return (
+    <div className={`base-styles ${props.className || ''}`}>
+      <label>{props.microcopies.label}</label>
+      {props.children}
+    </div>
+  );
+}
+```
+
+### Styling Guidelines
+
+- Use Tailwind CSS classes for all styling
+- Create reusable component variants using props
+- Avoid inline styles
+- Use conditional classes for different states
+
+Example:
+
+```typescript
+interface ButtonProps {
+  variant?: 'primary' | 'secondary';
+  size?: 'small' | 'medium' | 'large';
+  disabled?: boolean;
+  children: React.ReactNode;
+  className?: string;
+  microcopies?: {
+    loadingText?: string;
+  };
+}
+
+export function Button(props: ButtonProps) {
+  const variant = props.variant || 'primary';
+  const size = props.size || 'medium';
+  const disabled = props.disabled || false;
+  const className = props.className || '';
+
+  const baseClasses = 'font-medium rounded focus:outline-none focus:ring-2';
+  const variantClasses = {
+    primary: 'bg-blue-600 text-white hover:bg-blue-700',
+    secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300',
+  };
+  const sizeClasses = {
+    small: 'px-3 py-1.5 text-sm',
+    medium: 'px-4 py-2 text-base',
+    large: 'px-6 py-3 text-lg',
+  };
+
+  return (
+    <button
+      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+      disabled={disabled}
+    >
+      {props.children}
+    </button>
+  );
+}
+```
+
+### Single useState Pattern
+
+When components need state, use a single `useState` call to manage related state:
+
+```typescript
+interface ComponentState {
+	isLoading: boolean;
+	data: any[];
+	error: string | null;
+}
+
+export function DataComponent(props: DataComponentProps) {
+	const [state, setState] = React.useState<ComponentState>({
+		isLoading: false,
+		data: [],
+		error: null,
+	});
+
+	const updateState = (updates: Partial<ComponentState>) => {
+		setState((prevState) => ({ ...prevState, ...updates }));
+	};
+
+	// Use state.isLoading, state.data, state.error
+	// Update with updateState({ isLoading: true })
+}
+```
+
+### Responsive Design Best Practices
+
+- **Avoid JavaScript-based responsiveness**: Do not use `isMobile`, `window.innerWidth`, resize listeners, or similar JavaScript methods for responsive behavior
+- **Use CSS-first approach**: Handle all responsive behavior using Tailwind CSS breakpoint classes (`sm:`, `md:`, `lg:`, etc.)
+- **Single state management**: Use only one `useState` per component to manage all related state
+- **CSS-driven visibility**: Use responsive utility classes like `hidden md:flex`, `md:hidden`, etc. for showing/hiding elements
+
+Example of proper responsive component:
+
+```typescript
+interface ResponsiveComponentProps {
+  isOpen: boolean;
+  microcopies: {
+    toggleButton: string;
+  };
+}
+
+export function ResponsiveComponent(props: ResponsiveComponentProps) {
+  // Single useState for component state
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
+
+  return (
+    <div className={cn(
+      // Base styles
+      'fixed left-0 top-0 z-40 flex h-screen flex-col transition-all duration-300',
+      // Responsive behavior with CSS
+      'w-16 md:w-64', // Mobile: collapsed, Desktop: expanded
+      isCollapsed && 'md:w-16', // Desktop: collapsible
+      'hidden md:flex', // Mobile: hidden by default, Desktop: visible
+      !isCollapsed && 'flex', // Mobile: show when not collapsed
+    )}>
+      {/* Content */}
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="md:hidden" // Mobile-only button
+      >
+        {props.microcopies.toggleButton}
+      </button>
+    </div>
+  );
+}
+```
+
+## ESLint
+
+Follow these ESLint rules:
+
+- Use function declarations instead of arrow functions.
+- Prefer const over let when variables are not reassigned
+- Use function declarations for component definitions
+- Always use semicolons
+- Use single quotes for strings
+- No unused variables or imports
+- Proper TypeScript type annotations
+- Avoid props destructuring
+- Do not create index.ts barrel files

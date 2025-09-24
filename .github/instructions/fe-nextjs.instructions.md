@@ -1,144 +1,380 @@
 ---
+description: 'Next.js architecture with clean separation between routing and UI'
 applyTo: '**'
 ---
 
-# Next.js Best Practices for LLMs (2025)
+# Custom Next.js Development Instructions
 
-_Last updated: July 2025_
+Instructions for building Next.js applications with a clean separation between routing logic and UI components, following a structured adapter pattern.
 
-This document summarizes the latest, authoritative best practices for building, structuring, and maintaining Next.js applications. It is intended for use by LLMs and developers to ensure code quality, maintainability, and scalability.
+## Architecture Overview
 
----
+This architecture enforces a clear separation of concerns:
 
-## 1. Project Structure & Organization
+- **`src/app/`** - Pure routing, contains only Next.js route files
+- **`src/ui/`** - All UI components, pages, and layouts
+- **Adapters** - Transform API/server data into UI-compatible formats
 
-- **Use the `app/` directory** (App Router) for all new projects. Prefer it over the legacy `pages/` directory.
-- **Top-level folders:**
-  - `app/` — Routing, layouts, pages, and route handlers
-  - `public/` — Static assets (images, fonts, etc.)
-  - `lib/` — Shared utilities, API clients, and logic
-  - `components/` — Reusable UI components
-  - `contexts/` — React context providers
-  - `styles/` — Global and modular stylesheets
-  - `hooks/` — Custom React hooks
-  - `types/` — TypeScript type definitions
-- **Colocation:** Place files (components, styles, tests) near where they are used, but avoid deeply nested structures.
-- **Route Groups:** Use parentheses (e.g., `(admin)`) to group routes without affecting the URL path.
-- **Private Folders:** Prefix with `_` (e.g., `_internal`) to opt out of routing and signal implementation details.
+## Project Structure
 
-- **Feature Folders:** For large apps, group by feature (e.g., `app/dashboard/`, `app/auth/`).
-- **Use `src/`** (optional): Place all source code in `src/` to separate from config files.
+```
+src/
+├── app/                          # Next.js App Router (routing only)
+│   ├── [locale]/
+│   │   ├── layout.tsx           # Route export only
+│   │   └── example/
+│   │       └── page.tsx         # Route export only
+├── ui/                          # All UI logic
+│   ├── layouts/
+│   │   └── main-layout/
+│   │       ├── main-layout.tsx
+│   │       └── main-layout.ui.tsx
+│   └── pages/
+│       └── example-page/
+│           ├── example-page.tsx      # Server component with data fetching
+│           ├── example-page.adapter.ts # Data transformation logic
+│           └── example-page.ui.tsx    # UI component (server or client)
+```
 
-## 2.1. Server and Client Component Integration (App Router)
+## Implementation Pattern
 
-**Never use `next/dynamic` with `{ ssr: false }` inside a Server Component.** This is not supported and will cause a build/runtime error.
+### 1. Route Files (src/app/)
 
-**Correct Approach:**
+Route files should **ONLY** export the corresponding UI component. No logic should be implemented here.
 
-- If you need to use a Client Component (e.g., a component that uses hooks, browser APIs, or client-only libraries) inside a Server Component, you must:
-  1. Move all client-only logic/UI into a dedicated Client Component (with `'use client'` at the top).
-  2. Import and use that Client Component directly in the Server Component (no need for `next/dynamic`).
-  3. If you need to compose multiple client-only elements (e.g., a navbar with a profile dropdown), create a single Client Component that contains all of them.
+```typescript
+// src/app/[locale]/example/page.tsx
+export { ExamplePage as default } from '../../../ui/pages/example-page/example-page';
+```
 
-**Example:**
+### 2. Page Component (src/ui/pages/)
 
-```tsx
-// Server Component
-import DashboardNavbar from '@/components/DashboardNavbar';
+The main page component handles:
 
-export default async function DashboardPage() {
-	// ...server logic...
-	return (
-		<>
-			<DashboardNavbar /> {/* This is a Client Component */}
-			{/* ...rest of server-rendered page... */}
-		</>
-	);
+1. Data fetching from APIs, cookies, etc.
+2. Using the adapter to transform data and rendering the UI component
+
+```typescript
+// src/ui/pages/example-page/example-page.tsx
+import type { ReactNode } from 'react';
+import { cookies } from 'next/headers';
+import { apiSdk } from '../../../services/api/apiSdk';
+import { getDictionary } from '../../../utils/dictionaries/getDictionary';
+import { examplePageAdapter } from './example-page.adapter';
+import { ExamplePageUI } from './example-page.ui';
+import type { Locales } from '../../../utils/locales';
+
+type ExamplePageProps = {
+  params: Promise<{
+    locale: Locales;
+  }>;
+};
+
+export async function ExamplePage(props: ExamplePageProps): Promise<ReactNode> {
+  const params = await props.params;
+  const cookieStore = await cookies();
+  const dictionary = await getDictionary(params.locale);
+
+  // 1. Collect all data from various sources
+  const [userData, settingsData, productsData] = await Promise.all([
+    apiSdk.users.get(),
+    apiSdk.settings.get(),
+    apiSdk.products.search({ category: 'featured' }),
+  ]);
+
+  const userPreferences = cookieStore.get('userPreferences')?.value;
+  const sessionId = cookieStore.get('sessionId')?.value;
+
+  // 2. Transform data using adapter and return UI component
+  return (
+    <ExamplePageUI
+      {...examplePageAdapter({
+        // Raw API data
+        user: userData,
+        settings: settingsData,
+        products: productsData,
+
+        // Cookie/session data
+        userPreferences: userPreferences ? JSON.parse(userPreferences) : null,
+        sessionId,
+
+        // Framework data
+        locale: params.locale,
+        dictionary,
+      })}
+    />
+  );
 }
 ```
 
-**Why:**
+### 3. Page Adapter (src/ui/pages/)
 
-- Server Components cannot use client-only features or dynamic imports with SSR disabled.
-- Client Components can be rendered inside Server Components, but not the other way around.
+The adapter transforms raw server/API data into UI-compatible props.
 
-**Summary:**
-Always move client-only UI into a Client Component and import it directly in your Server Component. Never use `next/dynamic` with `{ ssr: false }` in a Server Component.
+````typescript
+### 3. Page Adapter (src/ui/pages/)
 
----
+The adapter transforms raw server/API data into UI-compatible props.
 
-## 2. Component Best Practices
+```typescript
+// src/ui/pages/example-page/example-page.adapter.ts
+import type { ComponentProps } from 'react';
+import type { ExamplePageUI } from './example-page.ui';
+import type { Locales } from '../../../utils/locales';
 
-- **Component Types:**
-  - **Server Components** (default): For data fetching, heavy logic, and non-interactive UI.
-  - **Client Components:** Add `'use client'` at the top. Use for interactivity, state, or browser APIs.
-- **When to Create a Component:**
-  - If a UI pattern is reused more than once.
-  - If a section of a page is complex or self-contained.
-  - If it improves readability or testability.
-- **Naming Conventions:**
-  - Use `PascalCase` for component files and exports (e.g., `UserCard.tsx`).
-  - Use `camelCase` for hooks (e.g., `useUser.ts`).
-  - Use `snake_case` or `kebab-case` for static assets (e.g., `logo_dark.svg`).
-  - Name context providers as `XyzProvider` (e.g., `ThemeProvider`).
-- **File Naming:**
-  - Match the component name to the file name.
-  - For single-export files, default export the component.
-  - For multiple related components, use an `index.ts` barrel file.
-- **Component Location:**
-  - Place shared components in `components/`.
-  - Place route-specific components inside the relevant route folder.
-- **Props:**
-  - Use TypeScript interfaces for props.
-  - Prefer explicit prop types and default values.
-- **Testing:**
-  - Co-locate tests with components (e.g., `UserCard.test.tsx`).
+// UI component props type - automatically derived from the UI component
+type ExamplePageUIProps = ComponentProps<typeof ExamplePageUI>;
 
-## 3. Naming Conventions (General)
+// Raw input data from server/APIs
+interface ExamplePageAdapterInput {
+	// API responses
+	user: any;
+	settings: any;
+	products: any;
 
-- **Folders:** `kebab-case` (e.g., `user-profile/`)
-- **Files:** `PascalCase` for components, `camelCase` for utilities/hooks, `kebab-case` for static assets
-- **Variables/Functions:** `camelCase`
-- **Types/Interfaces:** `PascalCase`
-- **Constants:** `UPPER_SNAKE_CASE`
+	// Session/cookie data
+	userPreferences: any;
+	sessionId?: string;
 
-## 4. API Routes (Route Handlers)
+	// Framework data
+	locale: Locales;
+	dictionary: any;
+}
 
-- **Prefer API Routes over Edge Functions** unless you need ultra-low latency or geographic distribution.
-- **Location:** Place API routes in `app/api/` (e.g., `app/api/users/route.ts`).
-- **HTTP Methods:** Export async functions named after HTTP verbs (`GET`, `POST`, etc.).
-- **Request/Response:** Use the Web `Request` and `Response` APIs. Use `NextRequest`/`NextResponse` for advanced features.
-- **Dynamic Segments:** Use `[param]` for dynamic API routes (e.g., `app/api/users/[id]/route.ts`).
-- **Validation:** Always validate and sanitize input. Use libraries like `zod` or `yup`.
-- **Error Handling:** Return appropriate HTTP status codes and error messages.
-- **Authentication:** Protect sensitive routes using middleware or server-side session checks.
+export function examplePageAdapter(input: ExamplePageAdapterInput): ExamplePageUIProps {
+	return {
+		// Direct props for UI component
+		user: {
+			name: input.user?.name || 'Guest',
+			email: input.user?.email,
+			avatar: input.user?.profilePicture?.url,
+			isLoggedIn: !!input.user,
+		},
+		products: input.products?.items?.map((product: any) => {
+			return {
+				id: product.code,
+				title: product.name,
+				price: product.price?.formattedValue || '0',
+				imageUrl: product.images?.[0]?.url,
+				isAvailable: product.stock?.stockLevel > 0,
+			};
+		}) || [],
+		theme: input.userPreferences?.theme || 'light',
+		language: input.locale,
+		currency: input.settings?.currency?.code || 'USD',
+	};
 
-## 5. General Best Practices
+		// Single dictionary object - UI component accesses nested properties
+		dictionary: input.dictionary,
 
-- **TypeScript:** Use TypeScript for all code. Enable `strict` mode in `tsconfig.json`.
-- **ESLint & Prettier:** Enforce code style and linting. Use the official Next.js ESLint config.
-- **Environment Variables:** Store secrets in `.env.local`. Never commit secrets to version control.
-- **Testing:** Use Jest, React Testing Library, or Playwright. Write tests for all critical logic and components.
-- **Accessibility:** Use semantic HTML and ARIA attributes. Test with screen readers.
-- **Performance:**
-  - Use built-in Image and Font optimization.
-  - Use Suspense and loading states for async data.
-  - Avoid large client bundles; keep most logic in Server Components.
-- **Security:**
-  - Sanitize all user input.
-  - Use HTTPS in production.
-  - Set secure HTTP headers.
-- **Documentation:**
-  - Write clear README and code comments.
-  - Document public APIs and components.
+		// Computed flags
+		shouldShowWelcome: !!input.user && !input.userPreferences?.hideWelcome,
+		isFirstVisit: !input.sessionId,
+	};
+}
+````
 
-# Avoid Unnecessary Example Files
+### 4. UI Component (src/ui/pages/)
 
-Do not create example/demo files (like ModalExample.tsx) in the main codebase unless the user specifically requests a live example, Storybook story, or explicit documentation component. Keep the repository clean and production-focused by default.
+The UI component is purely presentational and can be either server or client component. Props are automatically typed using `ComponentProps`.
 
-# Always use the latest documentation and guides
+```typescript
+// src/ui/pages/example-page/example-page.ui.tsx
+'use client'; // Optional: only if client interactivity is needed
 
-- For every nextjs related request, begin by searching for the most current nextjs documentation, guides, and examples.
-- Use the following tools to fetch and search documentation if they are available:
-  - `resolve_library_id` to resolve the package/library name in the docs.
-  - `get_library_docs` for up to date documentation.
+import { useState } from 'react';
+import type { ReactNode } from 'react';
+
+interface ExamplePageUIProps {
+  user: {
+    name: string;
+    email?: string;
+    avatar?: string;
+    isLoggedIn: boolean;
+  };
+  products: Array<{
+    id: string;
+    title: string;
+    price: string;
+    imageUrl?: string;
+    isAvailable: boolean;
+  }>;
+  theme: string;
+  language: string;
+  dictionary: Dictionary; // Single dictionary object
+  shouldShowWelcome: boolean;
+  isFirstVisit: boolean;
+}
+
+export function ExamplePageUI(props: ExamplePageUIProps): ReactNode {
+  const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+
+  return (
+    <div className={`min-h-screen ${props.theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
+      {/* Welcome section */}
+      {props.shouldShowWelcome && (
+        <section className="bg-blue-50 p-4 mb-6">
+          <h2 className="text-lg font-semibold">
+            Welcome back, {props.user.name}!
+          </h2>
+          {props.isFirstVisit && (
+            <p className="text-sm text-gray-600">Thanks for visiting us for the first time!</p>
+          )}
+        </section>
+      )}
+
+      {/* Main content */}
+      <main className="container mx-auto px-4">
+        <h1 className="text-3xl font-bold mb-4">{props.dictionary.examplePage.title}</h1>
+        <p className="text-gray-600 mb-8">{props.dictionary.examplePage.subtitle}</p>
+
+        {/* Products grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {props.products.length > 0 ? (
+            props.products.map((product) => (
+              <div
+                key={product.id}
+                className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                  selectedProduct === product.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                }`}
+                onClick={() => setSelectedProduct(product.id)}
+              >
+                {product.imageUrl && (
+                  <img
+                    src={product.imageUrl}
+                    alt={product.title}
+                    className="w-full h-48 object-cover mb-4 rounded"
+                  />
+                )}
+                <h3 className="font-semibold text-lg mb-2">{product.title}</h3>
+                <p className="text-green-600 font-bold mb-2">{product.price}</p>
+                <button
+                  className={`w-full py-2 px-4 rounded ${
+                    product.isAvailable
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                  disabled={!product.isAvailable}
+                >
+                  {props.dictionary.examplePage.buyButton}
+                </button>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-8">
+              <p className="text-gray-500">{props.dictionary.examplePage.noProducts}</p>
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}
+```
+
+## Development Guidelines
+
+### Route Files Rules
+
+- **NEVER** implement logic in `src/app/` route files
+- **ONLY** export the corresponding UI component
+- Use the exact component name followed by `as default`
+
+### Page Component Rules
+
+- **Data Fetching**: Collect all required data from APIs, cookies, headers, etc.
+- **Inline Adapter Usage**: Use the adapter directly in the JSX return to transform all data
+- **Async Operations**: Handle all async operations (await, Promise.all)
+
+### Adapter Rules
+
+- **Input Types**: Define clear interfaces for raw input data
+- **Output Types**: Use `ComponentProps<typeof UIComponent>` for output - **NO manual interface definitions**
+- **Pure Functions**: No side effects, only data transformation
+- **Use `input.PROPERTY`**: Access all input properties consistently
+- **Business Logic**: Handle data computation and business rules
+- **Single Dictionary**: Pass the complete dictionary object, not individual dictionary properties
+- **No Intermediate Variables**: Avoid creating temporary variables like `transformedData` - assign values directly in the return statement
+
+### UI Component Rules
+
+- **Presentational Only**: No data fetching or business logic
+- **Client vs Server**: Choose based on interactivity needs
+- **Auto-typed Props**: Let TypeScript infer props from the interface - **NO duplicate type definitions**
+- **Responsive Design**: Implement using Tailwind breakpoints
+- **Accessibility**: Use semantic HTML and ARIA attributes
+
+### TypeScript Best Practices
+
+**✅ DO: Use ComponentProps to avoid boilerplate**
+
+```typescript
+// In adapter
+import type { ComponentProps } from 'react';
+import type { ExamplePageUI } from './example-page.ui';
+
+type ExamplePageUIProps = ComponentProps<typeof ExamplePageUI>;
+
+export function examplePageAdapter(input: AdapterInput): ExamplePageUIProps {
+	// Implementation automatically matches UI component interface
+}
+```
+
+**❌ DON'T: Create duplicate interface definitions**
+
+```typescript
+// Don't do this - creates duplicate types
+interface ExamplePageUIProps {
+	user: UserType;
+	products: ProductType[];
+	// ... duplicating the UI component interface
+}
+```
+
+**✅ DO: Keep UI component interfaces clean and minimal**
+
+```typescript
+// UI component with simple, direct interface
+interface ExamplePageUIProps {
+	userName: string;
+	products: ProductCard[];
+	microcopies: {
+		title: string;
+		subtitle: string;
+	};
+}
+
+export function ExamplePageUI(props: ExamplePageUIProps) {
+	// Component implementation
+}
+```
+
+## File Naming Conventions
+
+- **Page Components**: `page-name.tsx` (server component with data logic)
+- **Adapters**: `page-name.adapter.ts` (data transformation)
+- **UI Components**: `page-name.ui.tsx` (presentational component)
+- **Route Files**: Standard Next.js naming (`page.tsx`, `layout.tsx`)
+
+## Benefits
+
+1. **Clear Separation**: Clean boundaries between routing, data, and UI
+2. **Testability**: Each layer can be tested independently
+3. **Maintainability**: Data transformations are centralized in adapters
+4. **Type Safety**: Strong typing between all layers
+5. **Performance**: Server components handle data, client components handle interactivity
+6. **Consistency**: Standardized pattern across all pages
+
+## Migration Strategy
+
+1. Move existing page logic from `src/app/` to `src/ui/pages/`
+2. Create adapters for data transformation
+3. Split UI into separate `.ui.tsx` files
+4. Update route files to only export UI components
+5. Update imports to use new structure
+
+This architecture ensures maintainable, testable, and performant Next.js applications with clear separation of concerns.
+
+```
+
+```

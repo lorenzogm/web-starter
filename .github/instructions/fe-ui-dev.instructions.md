@@ -1,5 +1,5 @@
 ---
-description: 'CUSTOM | ReactJS development standards and best practices'
+description: 'UI Development standards and best practices'
 applyTo: '**'
 ---
 
@@ -12,7 +12,7 @@ It's important to follow these instructions when creating UI components and bloc
 - `.github/instructions/reactjs.instructions.md`
 
 - Use the Figma MCP to generate UI designs.
-- Only work in the `shared/ui` workspace
+- Only work in the `packages/ui` workspace
 - The UI should be displaying in storybook based on mocks.
 - **Tailwind CSS Only**: Use Tailwind CSS for all styling - never use inline styles
 - **Localization**: Always include a `microcopies` prop containing all text that needs to be translated
@@ -21,16 +21,16 @@ It's important to follow these instructions when creating UI components and bloc
 ## Design Requirements
 
 - **Pixel Perfect Design**: UI must match the Figma design exactly, including spacing, typography, colors, and layout
-- **Component Usage**: ALWAYS use components from `shared/ui/src/components` - never create custom HTML elements when a component exists
+- **Component Usage**: ALWAYS use components from `packages/ui/src/components` - never create custom HTML elements when a component exists
 - **Interactive Stories**: Include state management in Storybook stories (outside the component) to make all clickable items functional
 - **Image Assets**: Store images in the block's `images` folder and ensure proper paths for both development and Storybook
 
 ## UI Components
 
-Create the blocks as pure UI components in `shared/ui/src/components`
+Create the blocks as pure UI components in `packages/ui/src/components`
 
 ```
-shared/ui/src/components
+packages/ui/src/components
 ├── button
 │   ├── button.tsx
 │   ├── button.mocks.ts
@@ -45,14 +45,14 @@ shared/ui/src/components
 
 ## UI Blocks
 
-Create the blocks as pure UI components in `shared/ui/src/blocks`, make sure you use the components from `shared/ui/src/components`.
+Create the blocks as pure UI components in `packages/ui/src/blocks`, make sure you use the components from `packages/ui/src/components`.
 
 - **Pixel Perfect**: Match Figma designs exactly with precise spacing, typography, and colors
-- **Component Usage**: MANDATORY - Use existing components from `shared/ui/src/components` (Button, Heading, etc.)
+- **Component Usage**: MANDATORY - Use existing components from `packages/ui/src/components` (Button, Heading, etc.)
 
-### Styling and `className` guidance for `shared/ui` components
+### Styling and `className` guidance for `packages/ui` components
 
-- It's very important to only use the `className` prop when using components from `shared/ui/src/components` to apply utility classes that affect positioning and spacing (for example: `mb-2`, `mt-4`, `ml-1`, `px-2`).
+- It's very important to only use the `className` prop when using components from `packages/ui/src/components` to apply utility classes that affect positioning and spacing (for example: `mb-2`, `mt-4`, `ml-1`, `px-2`).
 - Do NOT use `className` to override visual tokens of the component such as text color, background color, font weight, or other stylistic defaults. Those visual changes must be handled via the component's public props (for example `color`, `variant`, `tone`, `size`) so the component's design tokens and accessibility constraints remain intact.
 - If a shared component does not expose the prop you need (for example to change color or variant), open a small PR to add a well-defined prop rather than using `className` to override styles.
 
@@ -82,7 +82,7 @@ Example (NOT allowed):
 This is the structure of the blocks folder:
 
 ```
-shared/ui/src/blocks
+packages/ui/src/blocks
 ├── block-01
 │   ├── block-01.tsx
 │   ├── block-01.mocks.ts

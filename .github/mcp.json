@@ -1,0 +1,43 @@
+{
+  "mcpServers": {
+		"figma": {
+      "type": "local",
+      "tools": ["*"],
+			"command": "npx",
+			"args": ["-y", "figma-developer-mcp", "--stdio"],
+			"env": {
+				"FIGMA_API_KEY": "COPILOT_MCP_FIGMA_API_KEY"
+			}
+    },
+		"context7": {
+      "type": "local",
+      "tools": ["*"],
+			"command": "npx",
+			"args": ["-y", "@upstash/context7-mcp"]
+		},
+		"fetch": {
+      "type": "local",
+      "tools": ["*"],
+			"command": "uvx",
+			"args": ["mcp-server-fetch"]
+		},
+		"filesystem": {
+      "type": "local",
+      "tools": ["*"],
+			"command": "npx",
+			"args": ["-y", "@modelcontextprotocol/server-filesystem", "${input:workspace}"]
+		},
+		"memory": {
+      "type": "local",
+      "tools": ["*"],
+			"command": "npx",
+			"args": ["-y", "@modelcontextprotocol/server-memory"]
+		},
+		"sequentialthinking": {
+      "type": "local",
+      "tools": ["*"],
+			"command": "npx",
+			"args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+		}
+  }
+}

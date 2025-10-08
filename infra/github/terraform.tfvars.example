@@ -1,0 +1,7 @@
+# Example Terraform variables file
+# Copy this file to terraform.tfvars and fill in your values
+# WARNING: Never commit terraform.tfvars with real values to version control
+
+github_owner      = "your-github-username-or-org"
+github_token      = "ghp_your_github_personal_access_token"
+repository_name   = "ai-toolbox"

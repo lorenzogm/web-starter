@@ -1,0 +1,60 @@
+name: Terraform Apply
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'infra/github/**'
+      - '.github/workflows/terraform-apply.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  terraform-apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/github
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.0"
+
+      - name: Download Terraform state
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: terraform-state
+          path: infra/github
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Format
+        run: terraform fmt -recursive
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Apply
+        env:
+          TF_VAR_github_owner: ${{ github.repository_owner }}
+          TF_VAR_github_token: ${{ secrets.GH_TERRAFORM_TOKEN }}
+          TF_VAR_repository_name: ${{ github.event.repository.name }}
+        run: terraform apply -auto-approve
+
+      - name: Upload Terraform state
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: terraform-state
+          path: infra/github/terraform.tfstate
+          retention-days: 90

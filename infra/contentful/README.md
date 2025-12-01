@@ -156,7 +156,7 @@ Developer                          CI/CD                         Contentful
     │                                │ 8. Delete CI env ────────────►│
     │                                │                               │
     │ 8. Merge PR ──────────────────►│                               │
-    │ 8. Delete feature env ─────────┼──────────────────────────────►│
+    │    Delete feature env ─────────┼──────────────────────────────►│
     │                                │                               │
     │                                │ 9. Create backup ────────────►│
     │                                │ 10. Run migrations ──────────►│

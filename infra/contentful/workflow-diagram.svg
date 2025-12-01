@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <style>
+      .title { font: bold 18px sans-serif; fill: #1a1a2e; }
+      .header { font: bold 14px sans-serif; fill: #fff; }
+      .label { font: 12px sans-serif; fill: #333; }
+      .step { font: 11px sans-serif; fill: #555; }
+      .arrow { stroke: #4a5568; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .arrow-success { stroke: #38a169; stroke-width: 2; fill: none; marker-end: url(#arrowhead-success); }
+      .arrow-fail { stroke: #e53e3e; stroke-width: 2; fill: none; marker-end: url(#arrowhead-fail); }
+      .box-dev { fill: #e8f4fd; stroke: #3182ce; stroke-width: 2; rx: 8; }
+      .box-ci { fill: #fef3e2; stroke: #dd6b20; stroke-width: 2; rx: 8; }
+      .box-contentful { fill: #e6fffa; stroke: #319795; stroke-width: 2; rx: 8; }
+      .section-header-dev { fill: #3182ce; }
+      .section-header-ci { fill: #dd6b20; }
+      .section-header-contentful { fill: #319795; }
+      .phase-label { font: bold 11px sans-serif; fill: #666; }
+      .divider { stroke: #e2e8f0; stroke-width: 1; stroke-dasharray: 4,4; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#4a5568"/>
+    </marker>
+    <marker id="arrowhead-success" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#38a169"/>
+    </marker>
+    <marker id="arrowhead-fail" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#e53e3e"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="400" y="30" text-anchor="middle" class="title">Contentful Content Types Workflow</text>
+
+  <!-- Column Headers -->
+  <rect x="50" y="50" width="200" height="30" class="section-header-dev" rx="4"/>
+  <text x="150" y="70" text-anchor="middle" class="header">Developer</text>
+  
+  <rect x="300" y="50" width="200" height="30" class="section-header-ci" rx="4"/>
+  <text x="400" y="70" text-anchor="middle" class="header">CI/CD</text>
+  
+  <rect x="550" y="50" width="200" height="30" class="section-header-contentful" rx="4"/>
+  <text x="650" y="70" text-anchor="middle" class="header">Contentful</text>
+
+  <!-- Vertical lines -->
+  <line x1="150" y1="85" x2="150" y2="580" class="divider"/>
+  <line x1="400" y1="85" x2="400" y2="580" class="divider"/>
+  <line x1="650" y1="85" x2="650" y2="580" class="divider"/>
+
+  <!-- Phase 1: Development -->
+  <text x="30" y="115" class="phase-label">DEV</text>
+  
+  <!-- Step 1: Create branch -->
+  <rect x="60" y="100" width="180" height="35" class="box-dev"/>
+  <text x="150" y="122" text-anchor="middle" class="label">1. Create git branch</text>
+  
+  <!-- Step 2: Create env -->
+  <rect x="60" y="145" width="180" height="35" class="box-dev"/>
+  <text x="150" y="167" text-anchor="middle" class="label">2. Create environment</text>
+  <path d="M 240 162 L 560 162" class="arrow"/>
+  <rect x="560" y="145" width="180" height="35" class="box-contentful"/>
+  <text x="650" y="167" text-anchor="middle" class="label">Clone from master</text>
+
+  <!-- Step 3-4: Write migrations & tests -->
+  <rect x="60" y="195" width="180" height="35" class="box-dev"/>
+  <text x="150" y="217" text-anchor="middle" class="label">3. Write migrations</text>
+  
+  <rect x="60" y="240" width="180" height="35" class="box-dev"/>
+  <text x="150" y="262" text-anchor="middle" class="label">4. Add tests</text>
+
+  <!-- Phase 2: PR -->
+  <text x="30" y="305" class="phase-label">PR</text>
+  
+  <!-- Step 5: Create PR -->
+  <rect x="60" y="290" width="180" height="35" class="box-dev"/>
+  <text x="150" y="312" text-anchor="middle" class="label">5. Create PR</text>
+  <path d="M 240 307 L 310 307" class="arrow"/>
+
+  <!-- Steps 6-8: CI on PR -->
+  <rect x="310" y="290" width="180" height="35" class="box-ci"/>
+  <text x="400" y="312" text-anchor="middle" class="label">6. Create CI env</text>
+  <path d="M 490 307 L 560 307" class="arrow"/>
+  <rect x="560" y="290" width="180" height="35" class="box-contentful"/>
+  <text x="650" y="312" text-anchor="middle" class="label">ci-TICKET-xxx env</text>
+
+  <rect x="310" y="335" width="180" height="35" class="box-ci"/>
+  <text x="400" y="357" text-anchor="middle" class="label">7. Run e2e tests</text>
+
+  <rect x="310" y="380" width="180" height="35" class="box-ci"/>
+  <text x="400" y="402" text-anchor="middle" class="label">8. Delete CI env</text>
+  <path d="M 490 397 L 560 397" class="arrow"/>
+
+  <!-- Phase 3: Merge -->
+  <text x="30" y="445" class="phase-label">MERGE</text>
+
+  <!-- Step 8b: Merge PR -->
+  <rect x="60" y="430" width="180" height="35" class="box-dev"/>
+  <text x="150" y="447" text-anchor="middle" class="label">8. Merge PR &amp;</text>
+  <text x="150" y="459" text-anchor="middle" class="label">delete feature env</text>
+  <path d="M 240 447 L 310 447" class="arrow"/>
+  
+  <!-- Steps 9-11: CI on merge -->
+  <rect x="310" y="430" width="180" height="35" class="box-ci"/>
+  <text x="400" y="452" text-anchor="middle" class="label">9. Create backup</text>
+  <path d="M 490 447 L 560 447" class="arrow"/>
+  <rect x="560" y="430" width="180" height="35" class="box-contentful"/>
+  <text x="650" y="452" text-anchor="middle" class="label">Keep max 2 backups</text>
+
+  <rect x="310" y="475" width="180" height="35" class="box-ci"/>
+  <text x="400" y="497" text-anchor="middle" class="label">10. Run migrations</text>
+  <path d="M 490 492 L 560 492" class="arrow"/>
+  <rect x="560" y="475" width="180" height="35" class="box-contentful"/>
+  <text x="650" y="497" text-anchor="middle" class="label">Apply to master</text>
+
+  <rect x="310" y="520" width="180" height="35" class="box-ci"/>
+  <text x="400" y="542" text-anchor="middle" class="label">11. Run e2e tests</text>
+
+  <!-- Steps 12-13: Results -->
+  <rect x="560" y="520" width="88" height="35" class="box-contentful" style="fill: #fed7d7; stroke: #e53e3e;"/>
+  <text x="604" y="542" text-anchor="middle" class="label">12. Rollback</text>
+  <path d="M 490 542 L 560 542" class="arrow-fail"/>
+  
+  <rect x="652" y="520" width="88" height="35" class="box-ci" style="fill: #c6f6d5; stroke: #38a169;"/>
+  <text x="696" y="542" text-anchor="middle" class="label">13. Notify</text>
+  <path d="M 490 530 Q 520 530 520 542 Q 520 554 560 554 L 652 554" class="arrow-success" style="marker-end: none;"/>
+
+  <!-- Legend -->
+  <rect x="50" y="565" width="12" height="12" style="fill: #e8f4fd; stroke: #3182ce;"/>
+  <text x="68" y="575" class="step">Developer actions</text>
+  
+  <rect x="180" y="565" width="12" height="12" style="fill: #fef3e2; stroke: #dd6b20;"/>
+  <text x="198" y="575" class="step">CI/CD automation</text>
+  
+  <rect x="320" y="565" width="12" height="12" style="fill: #e6fffa; stroke: #319795;"/>
+  <text x="338" y="575" class="step">Contentful</text>
+
+  <rect x="450" y="565" width="12" height="12" style="fill: #c6f6d5; stroke: #38a169;"/>
+  <text x="468" y="575" class="step">Success</text>
+  
+  <rect x="530" y="565" width="12" height="12" style="fill: #fed7d7; stroke: #e53e3e;"/>
+  <text x="548" y="575" class="step">Failure</text>
+</svg>

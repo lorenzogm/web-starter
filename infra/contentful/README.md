@@ -134,39 +134,7 @@ Configure these environment variables for CI:
 
 ## Workflow Diagram
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         Content Types Workflow                          │
-└─────────────────────────────────────────────────────────────────────────┘
-
-Developer                          CI/CD                         Contentful
-    │                                │                               │
-    │ 1. Create git branch           │                               │
-    ├────────────────────────────────┼───────────────────────────────┤
-    │                                │                               │
-    │ 2. Create environment ─────────┼──────────────────────────────►│
-    │    (from master)               │                               │
-    │                                │                               │
-    │ 3. Write migrations            │                               │
-    │ 4. Add tests                   │                               │
-    │ 5. Create PR ─────────────────►│                               │
-    │                                │                               │
-    │                                │ 6. Create CI env ────────────►│
-    │                                │ 7. Run e2e tests              │
-    │                                │ 8. Delete CI env ────────────►│
-    │                                │                               │
-    │ 8. Merge PR ──────────────────►│                               │
-    │    Delete feature env ─────────┼──────────────────────────────►│
-    │                                │                               │
-    │                                │ 9. Create backup ────────────►│
-    │                                │ 10. Run migrations ──────────►│
-    │                                │ 11. Run e2e tests             │
-    │                                │                               │
-    │                                │ 12. On failure: rollback ────►│
-    │                                │ 13. On success: notify        │
-    │                                │                               │
-    └────────────────────────────────┴───────────────────────────────┘
-```
+![Contentful Content Types Workflow](workflow-diagram.svg)
 
 ## Quick Reference
 

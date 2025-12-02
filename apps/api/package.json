@@ -1,0 +1,23 @@
+{
+  "name": "api",
+  "private": true,
+  "scripts": {
+    "dev": "nitro dev",
+    "build": "nitro build --preset vercel",
+    "preview": "node .output/server/index.mjs",
+    "prepare": "nitro prepare",
+    "check:tests": "pnpm prepare && vitest run",
+    "check:types": "pnpm prepare && tsc --noEmit"
+  },
+  "devDependencies": {
+    "h3": "^1.15.4",
+    "nitro-test-utils": "0.9.4",
+    "nitropack": "2.12.4",
+    "vitest": "4.0.5",
+    "typescript": "5.8.2"
+  },
+  "dependencies": {
+    "h3-zod": "0.5.3",
+    "zod": "4.1.12"
+  }
+}

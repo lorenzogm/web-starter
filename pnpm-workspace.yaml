@@ -1,6 +1,7 @@
 packages:
-  - "apps/web-contentful"
+  - "apps/api"
   - "apps/storybook"
+  - "apps/web-contentful"
   - "configs"
   - "infra/contentful"
   - "infra/vercel/contentful-web"

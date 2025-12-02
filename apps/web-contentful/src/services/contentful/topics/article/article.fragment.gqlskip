@@ -1,0 +1,9 @@
+fragment Article on Article {
+	__typename
+	_id
+	sys {
+		id
+	}
+	title
+	excerpt
+}

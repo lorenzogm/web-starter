@@ -1,0 +1,17 @@
+fragment PageSectionItem on PageSectionItem {
+	__typename
+	_id
+	sys {
+		id
+	}
+	internalName
+	userInterface
+	content {
+		... on Article {
+			...Article
+		}
+		... on Product {
+			...Product
+		}
+	}
+}

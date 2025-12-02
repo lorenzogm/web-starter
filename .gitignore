@@ -1,0 +1,23 @@
+# AI
+.ai/
+.playwright-mcp
+
+# Dependencies
+node_modules
+.pnp
+.pnp.*
+.pnpm-store
+
+# env files
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+
+# Turbo (monorepo cache)
+.turbo
+
+# Misc
+.DS_Store

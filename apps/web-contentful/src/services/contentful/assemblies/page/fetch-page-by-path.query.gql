@@ -1,0 +1,8 @@
+query pageByPath($path: String!, $locale: String, $preview: Boolean) {
+	pageCollection(limit: 1, locale: $locale, preview: $preview, where: { path: $path }) {
+		items {
+			_id
+			...Page
+		}
+	}
+}

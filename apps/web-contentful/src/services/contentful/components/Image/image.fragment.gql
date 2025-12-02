@@ -1,0 +1,10 @@
+fragment Image on Image {
+	alternativeText
+	caption
+	image {
+		url
+		title
+		width
+		height
+	}
+}

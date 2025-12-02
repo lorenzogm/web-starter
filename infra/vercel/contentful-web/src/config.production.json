@@ -1,0 +1,27 @@
+{
+  "environment_variables": {
+    "BRAND": "main",
+    "CONTENTFUL_API_BASE_URL": "https://graphql.contentful.com/content/v1/spaces",
+    "CONTENTFUL_ENVIRONMENT": "master"
+  },
+  "vercel": {
+    "project": {
+      "name": "web-contentful",
+      "build_command": "cd ../.. && npx turbo@^2 run build --filter=web-contentful",
+      "root_directory": "apps/web-contentful",
+      "framework": "nextjs",
+      "public_source": false,
+      "install_command": "pnpm install --frozen-lockfile --ignore-scripts --prefer-offline",
+      "auto_assign_custom_domains": true,
+      "protection_bypass_for_automation": true,
+      "skew_protection": "12 hours",
+      "password_protection": {
+        "deployment_type": "all_deployments",
+        "password": "secret"
+      },
+      "vercel_authentication": {
+        "deployment_type": "none"
+      }
+    }
+  }
+}

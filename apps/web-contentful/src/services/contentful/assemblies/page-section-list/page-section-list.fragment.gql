@@ -1,0 +1,14 @@
+fragment PageSectionList on PageSectionList {
+	__typename
+	_id
+	sys {
+		id
+	}
+	internalName
+	userInterface
+	content {
+		... on List {
+			...List
+		}
+	}
+}

@@ -1,0 +1,9 @@
+fragment ContentItem on ContentItem {
+	__typename
+	_id
+	sys {
+		id
+	}
+	title
+	description
+}

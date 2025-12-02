@@ -1,0 +1,8 @@
+packages:
+  - "apps/web-contentful"
+  - "apps/storybook"
+  - "configs"
+  - "infra/contentful"
+  - "infra/vercel/contentful-web"
+  - "packages/logger"
+  - "packages/ui"

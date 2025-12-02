@@ -1,0 +1,25 @@
+{
+  "name": "infra-contentful",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check:types": "tsc --noEmit",
+    "cleanup": "node --import tsx --no-warnings ./scripts/cleanup.ts",
+    "migrate": "node --import tsx --no-warnings ./scripts/run.ts",
+    "migrate:create": "node --import tsx --no-warnings ./scripts/create.ts",
+    "migrate:rollback": "node --import tsx --no-warnings ./scripts/run.ts --rollback",
+    "seed": "node --import tsx --no-warnings ./scripts/seed.ts"
+  },
+  "dependencies": {
+    "@repo/logger": "workspace:*",
+    "contentful-management": "^11.38.3",
+    "dotenv": "16.4.7"
+  },
+  "devDependencies": {
+    "@repo/configs": "workspace:*",
+    "@types/node": "22.10.2",
+    "tsx": "4.19.2",
+    "typescript": "5.7.2"
+  }
+}

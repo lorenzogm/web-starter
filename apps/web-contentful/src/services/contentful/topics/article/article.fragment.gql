@@ -1,0 +1,11 @@
+fragment Article on Article {
+	__typename
+	sys {
+		id
+	}
+	title
+	excerpt
+	featuredImage {
+		...Image
+	}
+}

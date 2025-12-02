@@ -1,0 +1,7 @@
+query config($locale: String, $preview: Boolean) {
+	configCollection(limit: 1, preview: $preview, locale: $locale) {
+		items {
+			...Config
+		}
+	}
+}

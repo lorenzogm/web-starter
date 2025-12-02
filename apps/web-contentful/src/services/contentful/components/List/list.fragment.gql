@@ -1,0 +1,13 @@
+fragment List on List {
+	__typename
+	sys {
+		id
+	}
+	entriesCollection(limit: 10) {
+		items {
+			... on Product {
+				...Product
+			}
+		}
+	}
+}

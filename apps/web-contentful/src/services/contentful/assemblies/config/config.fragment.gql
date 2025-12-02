@@ -1,0 +1,10 @@
+fragment Config on Config {
+	__typename
+	_id
+	sys {
+		id
+	}
+
+	slugProductListingPage
+	slugProductDetailPage
+}

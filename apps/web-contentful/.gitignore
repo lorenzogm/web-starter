@@ -1,0 +1,23 @@
+# dependencies
+node_modules
+
+# build
+.next
+*.tsbuildinfo
+
+# env files
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+
+# misc
+.DS_Store
+
+# testing
+coverage
+
+# vercel
+.vercel

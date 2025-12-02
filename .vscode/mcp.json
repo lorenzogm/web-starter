@@ -1,0 +1,126 @@
+{
+  "servers": {
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "fetch": {
+      "command": "uvx",
+      "args": ["mcp-server-fetch"]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "${input:workspace}"
+      ]
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    },
+    "sequentialthinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "contentful": {
+      "command": "npx",
+      "args": ["-y", "@ivotoby/contentful-management-mcp-server"],
+      "env": {
+        "CONTENTFUL_MANAGEMENT_ACCESS_TOKEN": "${input:CONTENTFUL_API_KEY}"
+      }
+    },
+    "mermaid": {
+      "command": "npx",
+      "args": ["-y", "@peng-shawn/mermaid-mcp-server"]
+    },
+    "figma": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--stdio"],
+      "env": {
+        "FIGMA_API_KEY": "${input:FIGMA_API_KEY}"
+      }
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    },
+    "lighthouse": {
+      "command": "npx",
+      "args": ["lighthouse-mcp"]
+    },
+    "terraform": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "hashicorp/terraform-mcp-server"]
+    },
+    "atlassian": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "CONFLUENCE_URL",
+        "-e",
+        "CONFLUENCE_USERNAME",
+        "-e",
+        "CONFLUENCE_API_TOKEN",
+        "-e",
+        "JIRA_URL",
+        "-e",
+        "JIRA_USERNAME",
+        "-e",
+        "JIRA_API_TOKEN",
+        "ghcr.io/sooperset/mcp-atlassian:latest"
+      ],
+      "env": {
+        "CONFLUENCE_URL": "${input:ATLASSIAN_URL}/wiki",
+        "CONFLUENCE_USERNAME": "${input:EMAIL}",
+        "CONFLUENCE_API_TOKEN": "${input:ATLASSIAN_API_KEY}",
+        "JIRA_URL": "${input:ATLASSIAN_URL}",
+        "JIRA_USERNAME": "${input:EMAIL}",
+        "JIRA_API_TOKEN": "${input:ATLASSIAN_API_KEY}"
+      }
+    }
+  },
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "workspace",
+      "description": "Project workspace",
+      "password": false
+    },
+    {
+      "type": "promptString",
+      "id": "CONTENTFUL_API_KEY",
+      "description": "Contentful Management API Token - For content management",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "FIGMA_API_KEY",
+      "description": "Figma API Key - Personal access token from Figma account settings for accessing design files",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "ATLASSIAN_API_KEY",
+      "description": "Atlassian API Token - Personal access token for Jira and Confluence integration (create at id.atlassian.com)",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "ATLASSIAN_URL",
+      "description": "Base URL for Jira and Confluence workspace",
+      "password": false
+    },
+    {
+      "type": "promptString",
+      "id": "EMAIL",
+      "description": "Email address used for Atlassian authentication and API access",
+      "password": false
+    }
+  ]
+}

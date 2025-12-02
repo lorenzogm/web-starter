@@ -1,0 +1,124 @@
+/* stylelint-disable scss/at-rule-no-unknown */
+/* stylelint-disable custom-property-pattern */
+
+@import "tailwindcss";
+@import "@repo/ui/styles/globals.css";
+
+/* Scan app directory and UI package */
+@source "../app/**/*.{js,ts,jsx,tsx}";
+@source "../ui/**/*.{js,ts,jsx,tsx}";
+@source "../../packages/ui/src/**/*.{js,ts,jsx,tsx}";
+
+/* Container utility - v4 style with modern CSS */
+@utility container {
+  inline-size: 100%;
+  margin-inline: auto;
+  padding-inline: 1rem;
+
+  @media (width >= 640px) {
+    max-inline-size: 640px;
+    padding-inline: 2rem;
+  }
+
+  @media (width >= 768px) {
+    max-inline-size: 768px;
+  }
+
+  @media (width >= 1024px) {
+    max-inline-size: 1024px;
+  }
+
+  @media (width >= 1280px) {
+    max-inline-size: 1280px;
+  }
+
+  @media (width >= 1536px) {
+    max-inline-size: 1400px;
+  }
+}
+
+/* Additional utilities for transitions and animations */
+@utility transition-accordion {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+  transition-property: block-size, opacity;
+}
+
+/* Custom focus styles */
+@utility focus-visible-ring {
+  &:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Utility for hiding scrollbars */
+@utility scrollbar-hide {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Keyframes for animations */
+@keyframes accordion-down {
+  from {
+    block-size: 0;
+  }
+
+  to {
+    block-size: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    block-size: var(--radix-accordion-content-height);
+  }
+
+  to {
+    block-size: 0;
+  }
+}
+
+/* V4 compatibility base styles for borders (v3 used gray-200 by default) */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+
+  /* Preserve v3 button cursor behavior */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* Preserve v3 placeholder color behavior */
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-gray-400);
+  }
+
+  /* Preserve v3 dialog centering */
+  dialog {
+    margin: auto;
+  }
+}
+
+/* remove the arrows/spinners from an <input type="number"> */
+@layer utilities {
+  .no-spinner::-webkit-inner-spin-button,
+  .no-spinner::-webkit-outer-spin-button {
+    margin: 0;
+    appearance: none;
+  }
+
+  .no-spinner {
+    appearance: textfield;
+  }
+}

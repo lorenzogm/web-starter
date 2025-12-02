@@ -1,0 +1,12 @@
+# Biome ignore patterns
+.pnpm-store
+node_modules
+dist
+build
+.next
+coverage
+storybook-static
+playwright-report
+test-results
+pnpm-lock.yaml
+*.tsbuildinfo

@@ -1,0 +1,33 @@
+fragment Page on Page {
+	__typename
+	sys {
+		locale
+		id
+	}
+	internalName
+	path
+	seoTitle
+	seoDescription
+	topContentAreaCollection(limit: 20) {
+		items {
+			__typename
+			... on PageSectionItem {
+				...PageSectionItem
+			}
+			... on PageSectionList {
+				...PageSectionList
+			}
+		}
+	}
+	bottomContentAreaCollection(limit: 20) {
+		items {
+			__typename
+			... on PageSectionItem {
+				...PageSectionItem
+			}
+			... on PageSectionList {
+				...PageSectionList
+			}
+		}
+	}
+}

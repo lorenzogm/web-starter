@@ -1,0 +1,5 @@
+{
+  "extends": "@repo/configs/typescript/base",
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["dist", ".turbo", "coverage", "node_modules"]
+}

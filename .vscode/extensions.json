@@ -1,0 +1,15 @@
+{
+  "recommendations": [
+    "formulahendry.auto-rename-tag",
+    "ms-azuretools.vscode-docker",
+    "EditorConfig.EditorConfig",
+    "znck.grammarly",
+    "wix.vscode-import-cost",
+    "SonarSource.sonarlint-vscode",
+    "vitest.explorer",
+    "graphql.vscode-graphql-syntax",
+    "biomejs.biome",
+    "mylesmurphy.prettify-ts",
+    "bradlc.vscode-tailwindcss"
+  ]
+}

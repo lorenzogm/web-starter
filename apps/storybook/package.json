@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@repo/ui": "workspace:*",
-    "next": "15.5.3"
+    "next": "15.5.7"
   },
   "devDependencies": {
     "@repo/configs": "workspace:*",

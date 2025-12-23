@@ -1,0 +1,19 @@
+{
+  "name": "infra-vercel-kids",
+  "version": "0.0.0",
+  "private": true,
+  "sideEffects": false,
+  "scripts": {
+    "tf": "dotenv tsx scripts/terraform.ts"
+  },
+  "dependencies": {
+    "dotenv": "17.2.2"
+  },
+  "devDependencies": {
+    "@repo/configs": "workspace:*",
+    "@types/node": "24.5.2",
+    "dotenv-cli": "10.0.0",
+    "tsx": "4.20.5",
+    "zod": "4.1.11"
+  }
+}

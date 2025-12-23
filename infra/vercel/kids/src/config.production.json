@@ -1,0 +1,18 @@
+{
+  "environment_variables": {},
+  "vercel": {
+    "project": {
+      "name": "kids",
+      "build_command": "cd ../.. && npx turbo@^2 run build --filter=kids",
+      "root_directory": "apps/kids",
+      "framework": "vite",
+      "public_source": false,
+      "install_command": "pnpm install --frozen-lockfile --ignore-scripts --prefer-offline",
+      "auto_assign_custom_domains": true,
+      "protection_bypass_for_automation": true,
+      "vercel_authentication": {
+        "deployment_type": "none"
+      }
+    }
+  }
+}

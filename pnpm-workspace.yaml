@@ -1,9 +1,11 @@
 packages:
   - "apps/api"
+  - "apps/kids"
   - "apps/storybook"
   - "apps/web-contentful"
   - "configs"
   - "infra/contentful"
   - "infra/vercel/contentful-web"
+  - "infra/vercel/kids"
   - "packages/logger"
   - "packages/ui"

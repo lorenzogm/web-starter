@@ -11,7 +11,6 @@
       "install_command": "pnpm install --frozen-lockfile --ignore-scripts --prefer-offline",
       "auto_assign_custom_domains": true,
       "protection_bypass_for_automation": true,
-      "skew_protection": "12 hours",
       "vercel_authentication": {
         "deployment_type": "none"
       }

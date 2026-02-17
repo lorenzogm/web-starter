@@ -1,4 +1,4 @@
-name: Lorenzogm [Vercel] App Deploy
+name: lorenzogm [Vercel] App Deploy
 
 on:
   push:

@@ -1,4 +1,4 @@
-name: Lorenzogm [Vercel] Infrastructure Deploy
+name: lorenzogm [Vercel] Infrastructure Deploy
 
 on:
   push:

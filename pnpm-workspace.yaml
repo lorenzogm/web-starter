@@ -1,11 +1,13 @@
 packages:
   - "apps/api"
   - "apps/kids"
+  - "apps/lorenzogm"
   - "apps/storybook"
   - "apps/web-contentful"
   - "configs"
   - "infra/contentful"
   - "infra/vercel/contentful-web"
   - "infra/vercel/kids"
+  - "infra/vercel/lorenzogm"
   - "packages/logger"
   - "packages/ui"

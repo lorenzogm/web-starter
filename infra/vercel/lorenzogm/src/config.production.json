@@ -1,0 +1,20 @@
+{
+  "environment_variables": {},
+  "vercel": {
+    "project": {
+      "name": "lorenzogm",
+      "build_command": "cd ../.. && npx turbo@^2 run build --filter=lorenzogm",
+      "root_directory": "apps/lorenzogm",
+      "output_directory": "dist",
+      "framework": "vite",
+      "public_source": false,
+      "install_command": "pnpm install --frozen-lockfile --ignore-scripts --prefer-offline",
+      "auto_assign_custom_domains": true,
+      "protection_bypass_for_automation": true,
+      "skew_protection": "12 hours",
+      "vercel_authentication": {
+        "deployment_type": "none"
+      }
+    }
+  }
+}

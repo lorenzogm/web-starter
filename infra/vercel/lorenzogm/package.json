@@ -1,0 +1,21 @@
+{
+  "name": "@web-starter/infra-lorenzogm",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Terraform infrastructure for lorenzogm app on Vercel",
+  "scripts": {
+    "tf:init": "cd src && terraform init",
+    "tf:plan": "cd src && terraform plan -var-file=config.$TF_VAR_ENVIRONMENT.json",
+    "tf:apply": "cd src && terraform apply -var-file=config.$TF_VAR_ENVIRONMENT.json",
+    "tf:destroy": "cd src && terraform destroy -var-file=config.$TF_VAR_ENVIRONMENT.json",
+    "tf:format": "cd src && terraform fmt -recursive",
+    "tf:validate": "cd src && terraform validate",
+    "state:encrypt": "cd src && echo \"$TERRAFORM_STATE_ENCRYPT_KEY\" | openssl enc -aes-256-cbc -in terraform.tfstate -out terraform-$TF_VAR_ENVIRONMENT.tfstate.enc -pass stdin && rm -f terraform.tfstate",
+    "state:decrypt": "cd src && echo \"$TERRAFORM_STATE_ENCRYPT_KEY\" | openssl enc -aes-256-cbc -d -in terraform-$TF_VAR_ENVIRONMENT.tfstate.enc -out terraform.tfstate -pass stdin"
+  },
+  "keywords": [
+    "terraform",
+    "vercel",
+    "infrastructure"
+  ]
+}

@@ -1,0 +1,99 @@
+name: Lorenzogm [Vercel] Infrastructure Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'infra/vercel/lorenzogm/**'
+      - '.github/workflows/lorenzogm-vercel-infra-deploy.yml'
+  workflow_dispatch:
+
+env:
+  TF_VAR_ENVIRONMENT: production
+  TF_VAR_VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  TF_VAR_VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+
+jobs:
+  lorenzogm-vercel-infra-deploy:
+    runs-on: ubuntu-latest
+    name: Lorenzogm [Vercel] Infrastructure Deploy
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Decrypt Terraform State
+        working-directory: infra/vercel/lorenzogm/src
+        run: |
+          STATE_FILE="terraform-${{ env.TF_VAR_ENVIRONMENT }}.tfstate.enc"
+          if [ -f "$STATE_FILE" ]; then
+            echo "${{ secrets.TERRAFORM_STATE_ENCRYPT_KEY }}" | openssl enc -aes-256-cbc -d -in "$STATE_FILE" -out "terraform.tfstate" -pass stdin
+            echo "State file decrypted"
+          else
+            echo "No existing state file found"
+          fi
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+
+      - name: Terraform Init
+        working-directory: infra/vercel/lorenzogm/src
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: infra/vercel/lorenzogm/src
+        run: terraform plan -var-file="config.${{ env.TF_VAR_ENVIRONMENT }}.json" -out=tfplan
+
+      - name: Terraform Apply
+        working-directory: infra/vercel/lorenzogm/src
+        run: terraform apply -auto-approve tfplan
+
+      - name: Export Terraform Outputs
+        id: export-outputs
+        working-directory: infra/vercel/lorenzogm/src
+        if: success()
+        run: |
+          PROJECT_ID=$(terraform output -raw LORENZOGM_VERCEL_PROJECT_ID)
+          echo "Vercel Project ID: $PROJECT_ID"
+          gh variable set LORENZOGM_VERCEL_PROJECT_ID --body "$PROJECT_ID"
+        env:
+          GH_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+
+      - name: Encrypt Terraform State
+        working-directory: infra/vercel/lorenzogm/src
+        if: success()
+        run: |
+          if [ -f "terraform.tfstate" ]; then
+            echo "${{ secrets.TERRAFORM_STATE_ENCRYPT_KEY }}" | openssl enc -aes-256-cbc -in "terraform.tfstate" -out "terraform-${{ env.TF_VAR_ENVIRONMENT }}.tfstate.enc" -pass stdin
+            rm -f terraform.tfstate
+            echo "State file encrypted successfully"
+            ls -la terraform-${{ env.TF_VAR_ENVIRONMENT }}.tfstate.enc
+          else
+            echo "Error: No terraform.tfstate file found to encrypt"
+            exit 1
+          fi
+
+      - name: Configure Git
+        if: success()
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit Encrypted State
+        if: success()
+        run: |
+          cd ${{ github.workspace }}
+          git fetch origin main
+          STATE_FILE="infra/vercel/lorenzogm/src/terraform-${{ env.TF_VAR_ENVIRONMENT }}.tfstate.enc"
+          if git diff --quiet "$STATE_FILE" 2>/dev/null || [ ! -f "$STATE_FILE" ]; then
+            echo "State file has changes, committing..."
+            git add "$STATE_FILE"
+            git commit -m "chore: update terraform state for ${{ env.TF_VAR_ENVIRONMENT }} environment" || true
+            git push https://x-access-token:${{ secrets.GH_BOT_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
+            echo "State file committed and pushed"
+          else
+            echo "No changes to state file"
+          fi

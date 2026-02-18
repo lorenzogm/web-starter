@@ -31,6 +31,8 @@ jobs:
           gh api user --jq .login
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Decrypt Terraform State
         working-directory: infra/vercel/lorenzogm/src
         run: |
           STATE_FILE="terraform-${{ env.TF_VAR_ENVIRONMENT }}.tfstate.enc"

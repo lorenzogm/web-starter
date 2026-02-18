@@ -16,7 +16,7 @@ env:
 jobs:
   lorenzogm-vercel-infra-deploy:
     runs-on: ubuntu-latest
-    name: Lorenzogm [Vercel] Infrastructure Deploy
+    name: lorenzogm [Vercel] Infrastructure Deploy
     environment: production
 
     steps:

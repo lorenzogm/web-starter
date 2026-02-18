@@ -8,7 +8,7 @@ on:
 jobs:
   lorenzogm-vercel-app-deploy:
     runs-on: ubuntu-latest
-    name: Lorenzogm [Vercel] App Deploy
+    name: lorenzogm [Vercel] App Deploy
     environment: production
 
     steps:

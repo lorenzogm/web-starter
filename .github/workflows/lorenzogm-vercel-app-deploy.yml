@@ -2,7 +2,8 @@ name: lorenzogm [Vercel] App Deploy
 
 on:
   workflow_run:
-    workflows: [lorenzogm [Vercel] Infrastructure Deploy]
+    workflows:
+      - "lorenzogm [Vercel] Infrastructure Deploy"
     types: [completed]
     branches: [main]
   workflow_dispatch:

@@ -18,19 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     name: lorenzogm [Vercel] Infrastructure Deploy
     environment: production
-    permissions:
-      contents: write
-      id-token: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Validate GitHub Token
-        run: |
-          gh api user --jq .login
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Decrypt Terraform State
         working-directory: infra/vercel/lorenzogm/src
@@ -69,7 +60,7 @@ jobs:
           echo "Vercel Project ID: $PROJECT_ID"
           gh variable set LORENZOGM_VERCEL_PROJECT_ID --body "$PROJECT_ID"
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
 
       - name: Encrypt Terraform State
         working-directory: infra/vercel/lorenzogm/src
@@ -90,9 +81,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          gh auth setup-git
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit Encrypted State
         if: success()
@@ -104,7 +92,7 @@ jobs:
             echo "State file has changes, committing..."
             git add "$STATE_FILE"
             git commit -m "chore: update terraform state for ${{ env.TF_VAR_ENVIRONMENT }} environment" || true
-            git push origin main
+            git push https://x-access-token:${{ secrets.GH_BOT_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
             echo "State file committed and pushed"
           else
             echo "No changes to state file"

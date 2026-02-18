@@ -1,7 +1,9 @@
 name: lorenzogm [Vercel] App Deploy
 
 on:
-  push:
+  workflow_run:
+    workflows: [lorenzogm [Vercel] Infrastructure Deploy]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -10,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     name: lorenzogm [Vercel] App Deploy
     environment: production
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run'
 
     steps:
       - name: Checkout
